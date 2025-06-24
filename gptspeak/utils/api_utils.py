@@ -13,7 +13,7 @@ def get_api_key():
     # Check environment variable
     env_key = os.environ.get("OPENAI_API_KEY")
     if env_key:
-        return env_key
+        return env_key.strip()
 
     # Check config file
     config = configparser.ConfigParser()
@@ -21,7 +21,7 @@ def get_api_key():
     if config_file.exists():
         config.read(config_file)
         if "DEFAULT" in config and "api_key" in config["DEFAULT"]:
-            return config["DEFAULT"]["api_key"]
+            return config["DEFAULT"]["api_key"].strip()
 
     # If no key found, raise an exception
     raise APIConfigError(
@@ -32,7 +32,8 @@ def get_api_key():
 
 def get_openai_client() -> OpenAI:
     api_key = get_api_key()
-    return OpenAI(api_key=api_key)
+    from openai import OpenAI
+    return OpenAI(api_key=api_key, timeout=60.0)
 
 
 def validate_model(ctx, param, value):

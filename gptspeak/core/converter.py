@@ -34,10 +34,18 @@ def convert_text_chunk_to_speech(
     client: OpenAI, text: str, model: str, voice: str
 ) -> io.BytesIO:
     try:
+        logging.info(f"Converting text chunk of length {len(text)} characters")
         response = client.audio.speech.create(model=model, voice=voice, input=text)
+        logging.info(f"Successfully received response with {len(response.content)} bytes")
         return io.BytesIO(response.content)
     except Exception as e:
-        raise ConversionError(f"Failed to convert text chunk to speech: {str(e)}")
+        import traceback
+        logging.error(f"Detailed error in convert_text_chunk_to_speech: {traceback.format_exc()}")
+        logging.error(f"Error type: {type(e).__name__}")
+        logging.error(f"Error message: {str(e)}")
+        if hasattr(e, 'response'):
+            logging.error(f"HTTP response: {e.response}")
+        raise ConversionError(f"Failed to convert text chunk to speech: {type(e).__name__}: {str(e)}")
 
 
 def convert_text_to_speech(input_file: Path, output_file: Path, model: str, voice: str):
